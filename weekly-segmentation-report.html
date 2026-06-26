@@ -1,0 +1,1407 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+  <title>Pixmax 每周用户分层数据汇报</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #657282;
+      --line: #dfe4ea;
+      --blue: #246bfe;
+      --green: #168a5b;
+      --amber: #b76500;
+      --red: #bf3434;
+      --teal: #0f7c86;
+      --shadow: 0 12px 34px rgba(23, 32, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.5;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px 18px;
+      background: #101820;
+      color: #f7fbff;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #246bfe;
+      font-weight: 800;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .brand-subtitle {
+      color: #aeb8c4;
+      font-size: 12px;
+    }
+
+    .nav-label {
+      margin: 24px 8px 8px;
+      color: #8f9cab;
+      font-size: 12px;
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 8px 10px;
+      color: #d9e2ec;
+      text-decoration: none;
+      border-radius: 7px;
+      font-size: 14px;
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .content {
+      min-width: 0;
+      padding: 28px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      max-width: 760px;
+    }
+
+    .period {
+      min-width: 240px;
+      padding: 14px 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .period strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .period-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section {
+      margin-top: 24px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      min-height: 116px;
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .metric-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .th-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    th:first-child .th-label {
+      justify-content: flex-start;
+    }
+
+    .tip {
+      width: 16px;
+      height: 16px;
+      display: inline-grid;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid #b8c3cf;
+      border-radius: 50%;
+      color: #5f6d7a;
+      background: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1;
+      padding: 0;
+      vertical-align: middle;
+      cursor: help;
+      outline: 0;
+    }
+
+    .tip:focus-visible {
+      box-shadow: 0 0 0 3px rgba(36, 107, 254, 0.18);
+    }
+
+    .floating-tip {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: max-content;
+      max-width: min(320px, calc(100vw - 24px));
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #ffffff;
+      background: #17202a;
+      box-shadow: 0 10px 24px rgba(23, 32, 42, 0.2);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.45;
+      text-align: left;
+      white-space: normal;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      z-index: 1000;
+      transition: opacity 0.12s ease;
+    }
+
+    .floating-tip.is-visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .floating-tip-arrow {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #17202a;
+      transform: rotate(45deg);
+    }
+
+    .floating-tip[data-placement="top"] .floating-tip-arrow {
+      bottom: -5px;
+    }
+
+    .floating-tip[data-placement="bottom"] .floating-tip-arrow {
+      top: -5px;
+    }
+
+    .metric-value {
+      margin-top: 10px;
+      font-size: 25px;
+      font-weight: 800;
+    }
+
+    .delta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .up {
+      color: var(--green);
+    }
+
+    .down {
+      color: var(--red);
+    }
+
+    .band {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-pad {
+      padding: 18px;
+    }
+
+    .insight-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .insight {
+      display: grid;
+      grid-template-columns: 10px 1fr;
+      gap: 10px;
+      align-items: start;
+      color: #2b3744;
+      font-size: 14px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      margin-top: 7px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    .dot.green {
+      background: var(--green);
+    }
+
+    .dot.amber {
+      background: var(--amber);
+    }
+
+    table {
+      width: 100%;
+      min-width: 960px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .table-scroll,
+    .matrix-scroll {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .table-scroll:focus-visible,
+    .matrix-scroll:focus-visible {
+      outline: 3px solid rgba(36, 107, 254, 0.22);
+      outline-offset: -3px;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+
+    th {
+      color: var(--muted);
+      background: #fbfcfe;
+      font-weight: 700;
+    }
+
+    .table-scroll th:first-child,
+    .table-scroll td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: #ffffff;
+      box-shadow: 1px 0 0 var(--line);
+    }
+
+    .table-scroll th:first-child {
+      z-index: 2;
+      background: #fbfcfe;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      color: #17335f;
+      background: #e9f0ff;
+      font-weight: 700;
+    }
+
+    .tag.green {
+      color: #0f5139;
+      background: #dff4ea;
+    }
+
+    .tag.amber {
+      color: #694000;
+      background: #fff0d8;
+    }
+
+    .tag.red {
+      color: #7c1d1d;
+      background: #ffe5e5;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: 118px repeat(4, minmax(126px, 1fr));
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+    }
+
+    .cell {
+      min-height: 94px;
+      padding: 12px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+    }
+
+    button.cell {
+      width: 100%;
+      margin: 0;
+      border-top: 0;
+      border-left: 0;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    button.cell:hover {
+      outline: 2px solid rgba(36, 107, 254, 0.24);
+      outline-offset: -2px;
+    }
+
+    button.cell:focus-visible {
+      position: relative;
+      z-index: 3;
+      outline: 3px solid rgba(36, 107, 254, 0.4);
+      outline-offset: -3px;
+    }
+
+    button.cell.is-selected {
+      position: relative;
+      z-index: 2;
+      box-shadow: inset 0 0 0 3px var(--blue);
+    }
+
+    .cell.head {
+      min-height: 48px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      background: #fbfcfe;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .cell.axis {
+      display: grid;
+      align-items: center;
+      color: var(--muted);
+      background: #fbfcfe;
+      font-weight: 800;
+    }
+
+    .cell strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 15px;
+    }
+
+    .cell span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .cell.core {
+      background: #eaf8f1;
+    }
+
+    .cell.convert {
+      background: #eaf1ff;
+    }
+
+    .cell.risk {
+      background: #fff3de;
+    }
+
+    .cell.silent {
+      background: #f2f4f7;
+    }
+
+    .segment-detail {
+      margin-top: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .detail-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .detail-title {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .detail-subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .detail-badge {
+      flex: 0 0 auto;
+      padding: 4px 8px;
+      border-radius: 6px;
+      color: #17335f;
+      background: #e9f0ff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .detail-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .detail-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: #17335f;
+      background: #ffffff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .detail-link.primary {
+      color: #ffffff;
+      border-color: var(--blue);
+      background: var(--blue);
+    }
+
+    .detail-body {
+      padding: 16px 18px 18px;
+    }
+
+    .detail-metrics {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .detail-metric {
+      min-height: 78px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .detail-metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .detail-metric strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 18px;
+    }
+
+    .detail-split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .detail-note {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .detail-note h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .detail-note p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .mini-table {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .mini-table table {
+      min-width: 0;
+    }
+
+    .mini-table th,
+    .mini-table td {
+      padding: 10px 12px;
+    }
+
+    .drill-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .drill {
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .drill h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .drill p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .bar {
+      height: 8px;
+      margin-top: 14px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #edf0f4;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      background: var(--teal);
+      border-radius: inherit;
+    }
+
+    @media (max-width: 1180px) {
+      .metric-grid {
+        grid-template-columns: repeat(3, minmax(140px, 1fr));
+      }
+
+      .band {
+        grid-template-columns: 1fr;
+      }
+
+      .drill-grid {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+      }
+
+      .detail-metrics {
+        grid-template-columns: repeat(3, minmax(120px, 1fr));
+      }
+
+      .detail-split {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .content {
+        padding: 18px;
+      }
+
+      .topbar,
+      .section-head {
+        display: block;
+      }
+
+      .period {
+        margin-top: 14px;
+        min-width: 0;
+      }
+
+      .metric-grid,
+      .drill-grid,
+      .detail-metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-head {
+        display: block;
+      }
+
+      .detail-badge {
+        display: inline-flex;
+        margin-top: 10px;
+      }
+
+      .detail-actions {
+        justify-content: flex-start;
+      }
+
+      .matrix {
+        min-width: 680px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">P</div>
+        <div>
+          <div class="brand-title">Pixmax 数据周报</div>
+          <div class="brand-subtitle">充值分层 × 积分消耗分层</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="报表导航">
+        <div class="nav-label">周报模块</div>
+        <a class="active" href="#overview">总览</a>
+        <a href="#revenue">充值分层</a>
+        <a href="#usage">积分消耗分层</a>
+        <a href="#matrix">交叉分析</a>
+        <a href="#drilldown">下钻诊断</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <h1>每周用户分层数据汇报</h1>
+          <div class="subtitle">用近 4 周分层定义用户，看本周充值、积分消耗、活跃、留存与复购表现，区分收入能力和产品使用强度。</div>
+        </div>
+        <div class="period">
+          <strong>统计周期：2026-06-15 至 2026-06-21</strong>
+          <span class="period-line">分层窗口：统计周开始前近 28 天 <span class="tip" tabindex="0" data-tip="28 天刚好是 4 个完整自然周，适合每周汇报：
+每次统计都覆盖同样数量的星期一到星期日；
+不会因为某个月 28/29/30/31 天不同导致口径漂移；
+可以减少周末/工作日结构差异；
+和 WAU、周留存、周复购这些周维度指标更容易对齐。">?</span></span>
+        </div>
+      </header>
+
+      <section id="overview" class="section">
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric-label">周活用户 <span class="tip" tabindex="0" data-tip="统计周内至少发生 1 次有效活跃行为的去重用户数。有效活跃行为建议排除登录失败、埋点心跳等无业务意义事件。">?</span></div>
+            <div class="metric-value">48,260</div>
+            <div class="delta up">环比 +6.8%</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">月活用户 <span class="tip" tabindex="0" data-tip="统计周结束日向前近 30 天内至少发生 1 次有效活跃行为的去重用户数，用于观察近月活跃规模。">?</span></div>
+            <div class="metric-value">126,840</div>
+            <div class="delta up">环比 +3.1%</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">周充值金额 <span class="tip" tabindex="0" data-tip="统计周内支付成功且未退款的充值订单金额总和。退款、撤单和测试订单需从口径中剔除。">?</span></div>
+            <div class="metric-value">¥816,400</div>
+            <div class="delta up">环比 +9.4%</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">周充值人数 <span class="tip" tabindex="0" data-tip="统计周内至少有 1 笔有效充值订单的去重用户数。多次充值只计 1 人。">?</span></div>
+            <div class="metric-value">5,418</div>
+            <div class="delta down">环比 -1.2%</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">周积分消耗 <span class="tip" tabindex="0" data-tip="统计周内因生成、编辑、增强等有效功能使用产生的积分扣减总和。系统补扣、人工修正需单独标记。">?</span></div>
+            <div class="metric-value">9.72M</div>
+            <div class="delta up">环比 +12.6%</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">周消耗留存率 <span class="tip" tabindex="0" data-tip="上周有积分消耗的用户中，本周仍有积分消耗的用户占比。公式：本周继续消耗用户数 / 上周消耗用户数。">?</span></div>
+            <div class="metric-value">42.7%</div>
+            <div class="delta up">环比 +2.4 个百分点</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="band">
+          <div class="panel panel-pad">
+            <div class="section-head">
+              <h2>本周结论</h2>
+            </div>
+            <ul class="insight-list">
+              <li class="insight"><i class="dot green"></i><span>高充值 × 高消耗用户贡献 51.8% 周充值金额，是本周核心收入与使用人群。</span></li>
+              <li class="insight"><i class="dot amber"></i><span>高充值 × 低消耗用户占高充值层 18.6%，需要排查是否存在囤积分或首购后未完成关键体验。</span></li>
+              <li class="insight"><i class="dot"></i><span>低充值 × 高消耗用户积分使用频率高，适合做首充礼包、权益提醒和额度耗尽触发转化。</span></li>
+            </ul>
+          </div>
+
+          <div class="panel panel-pad">
+            <div class="section-head">
+              <h2>固定口径</h2>
+            </div>
+            <ul class="insight-list">
+              <li class="insight"><i class="dot"></i><span>充值分层：按统计周开始前近 28 天充值金额分为未充值、低、中、高。</span></li>
+              <li class="insight"><i class="dot"></i><span>消耗分层：按统计周开始前近 28 天积分消耗分为未消耗、低、中、高。</span></li>
+              <li class="insight"><i class="dot"></i><span>本周指标：只统计当前自然周表现，避免用本周数据同时定义分层和证明结果。</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="revenue" class="section">
+        <div class="section-head">
+          <div>
+            <h2>充值分层表现</h2>
+            <div class="hint">用于判断收入贡献、客单价、复购和充值留存。</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="table-scroll" tabindex="0" aria-label="充值分层表现表格横向滚动区域">
+            <table>
+            <thead>
+              <tr>
+                <th><span class="th-label">充值分层 <span class="tip" tabindex="0" data-tip="按统计周开始前近 28 天有效充值金额分层：未充值、低充值、中充值、高充值。低中高阈值可用分位数或业务固定阈值。">?</span></span></th>
+                <th><span class="th-label">用户数 <span class="tip" tabindex="0" data-tip="落入当前充值分层的去重用户数，分层依据为统计周开始前近 28 天充值金额。">?</span></span></th>
+                <th><span class="th-label">周活 <span class="tip" tabindex="0" data-tip="当前分层用户中，统计周内至少活跃 1 次的去重用户数。">?</span></span></th>
+                <th><span class="th-label">月活 <span class="tip" tabindex="0" data-tip="当前分层用户中，统计周结束日向前近 30 天内至少活跃 1 次的去重用户数。">?</span></span></th>
+                <th><span class="th-label">周充值金额 <span class="tip" tabindex="0" data-tip="当前分层用户在统计周内支付成功且未退款的充值金额总和。">?</span></span></th>
+                <th><span class="th-label">周充值人数 <span class="tip" tabindex="0" data-tip="当前分层用户中，统计周内至少完成 1 笔有效充值的去重用户数。">?</span></span></th>
+                <th><span class="th-label">周 ARPPU <span class="tip" tabindex="0" data-tip="统计周内付费用户的人均充值金额。公式：周充值金额 / 周充值人数。">?</span></span></th>
+                <th><span class="th-label">周充值复购率 <span class="tip" tabindex="0" data-tip="统计周充值用户中，历史上在本周之前已有过有效充值的用户占比。公式：复购充值用户数 / 本周充值人数。">?</span></span></th>
+                <th><span class="th-label">周充值留存 <span class="tip" tabindex="0" data-tip="上周有有效充值的用户中，本周仍有有效充值的用户占比。公式：本周继续充值用户数 / 上周充值用户数。">?</span></span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tag">高充值</span></td>
+                <td>3,480</td>
+                <td>2,916</td>
+                <td>3,222</td>
+                <td>¥514,200</td>
+                <td>1,428</td>
+                <td>¥360</td>
+                <td>46.2%</td>
+                <td>58.9%</td>
+              </tr>
+              <tr>
+                <td><span class="tag green">中充值</span></td>
+                <td>8,920</td>
+                <td>5,842</td>
+                <td>7,116</td>
+                <td>¥221,700</td>
+                <td>2,084</td>
+                <td>¥106</td>
+                <td>31.5%</td>
+                <td>44.8%</td>
+              </tr>
+              <tr>
+                <td><span class="tag amber">低充值</span></td>
+                <td>19,406</td>
+                <td>8,734</td>
+                <td>13,982</td>
+                <td>¥80,500</td>
+                <td>1,906</td>
+                <td>¥42</td>
+                <td>18.7%</td>
+                <td>30.1%</td>
+              </tr>
+              <tr>
+                <td><span class="tag red">未充值</span></td>
+                <td>94,120</td>
+                <td>30,768</td>
+                <td>102,520</td>
+                <td>¥0</td>
+                <td>0</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+              </tr>
+            </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="usage" class="section">
+        <div class="section-head">
+          <div>
+            <h2>积分消耗分层表现</h2>
+            <div class="hint">用于判断使用强度、活跃、消耗留存和功能粘性。</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="table-scroll" tabindex="0" aria-label="积分消耗分层表现表格横向滚动区域">
+            <table>
+            <thead>
+              <tr>
+                <th><span class="th-label">消耗分层 <span class="tip" tabindex="0" data-tip="按统计周开始前近 28 天有效积分消耗分层：未消耗、低消耗、中消耗、高消耗。低中高阈值可用分位数或业务固定阈值。">?</span></span></th>
+                <th><span class="th-label">用户数 <span class="tip" tabindex="0" data-tip="落入当前消耗分层的去重用户数，分层依据为统计周开始前近 28 天积分消耗。">?</span></span></th>
+                <th><span class="th-label">周活 <span class="tip" tabindex="0" data-tip="当前分层用户中，统计周内至少活跃 1 次的去重用户数。">?</span></span></th>
+                <th><span class="th-label">月活 <span class="tip" tabindex="0" data-tip="当前分层用户中，统计周结束日向前近 30 天内至少活跃 1 次的去重用户数。">?</span></span></th>
+                <th><span class="th-label">周积分消耗 <span class="tip" tabindex="0" data-tip="当前分层用户在统计周内因有效功能使用产生的积分扣减总和。">?</span></span></th>
+                <th><span class="th-label">周消耗人数 <span class="tip" tabindex="0" data-tip="当前分层用户中，统计周内至少发生 1 次有效积分消耗的去重用户数。">?</span></span></th>
+                <th><span class="th-label">周人均消耗 <span class="tip" tabindex="0" data-tip="统计周内消耗用户的人均积分消耗。公式：周积分消耗 / 周消耗人数。">?</span></span></th>
+                <th><span class="th-label">周消耗留存率 <span class="tip" tabindex="0" data-tip="上周有积分消耗的用户中，本周仍有积分消耗的用户占比。公式：本周继续消耗用户数 / 上周消耗用户数。">?</span></span></th>
+                <th><span class="th-label">周使用频率 <span class="tip" tabindex="0" data-tip="统计周内消耗用户的人均有效使用次数。公式：有效功能使用次数 / 周消耗人数。">?</span></span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tag">高消耗</span></td>
+                <td>6,214</td>
+                <td>5,718</td>
+                <td>5,984</td>
+                <td>5.81M</td>
+                <td>4,862</td>
+                <td>1,195</td>
+                <td>64.2%</td>
+                <td>6.8 次/周</td>
+              </tr>
+              <tr>
+                <td><span class="tag green">中消耗</span></td>
+                <td>16,330</td>
+                <td>11,540</td>
+                <td>13,406</td>
+                <td>3.18M</td>
+                <td>9,846</td>
+                <td>323</td>
+                <td>47.5%</td>
+                <td>3.1 次/周</td>
+              </tr>
+              <tr>
+                <td><span class="tag amber">低消耗</span></td>
+                <td>29,882</td>
+                <td>15,234</td>
+                <td>22,107</td>
+                <td>0.73M</td>
+                <td>12,880</td>
+                <td>57</td>
+                <td>28.9%</td>
+                <td>1.4 次/周</td>
+              </tr>
+              <tr>
+                <td><span class="tag red">未消耗</span></td>
+                <td>73,500</td>
+                <td>15,768</td>
+                <td>85,343</td>
+                <td>0</td>
+                <td>0</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+              </tr>
+            </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="matrix" class="section">
+        <div class="section-head">
+          <div>
+            <h2>充值 × 积分消耗交叉分析</h2>
+            <div class="hint">用于识别核心高价值、囤积分、高使用低付费和沉默人群。</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="matrix-scroll" tabindex="0" aria-label="充值和积分消耗交叉矩阵横向滚动区域">
+            <div class="matrix" role="table" aria-label="充值和积分消耗交叉矩阵">
+            <div class="cell head"></div>
+            <div class="cell head">未消耗</div>
+            <div class="cell head">低消耗</div>
+            <div class="cell head">中消耗</div>
+            <div class="cell head">高消耗</div>
+
+            <div class="cell axis">未充值</div>
+            <button class="cell silent matrix-data" type="button" data-segment-key="none-none"><strong>67,420</strong><span>沉默或仅浏览</span></button>
+            <button class="cell matrix-data" type="button" data-segment-key="none-low"><strong>18,640</strong><span>轻度体验</span></button>
+            <button class="cell convert matrix-data" type="button" data-segment-key="none-mid"><strong>6,882</strong><span>赠送积分驱动</span></button>
+            <button class="cell convert matrix-data" type="button" data-segment-key="none-high"><strong>1,178</strong><span>高转化潜力</span></button>
+
+            <div class="cell axis">低充值</div>
+            <button class="cell risk matrix-data" type="button" data-segment-key="low-none"><strong>6,320</strong><span>首充未激活</span></button>
+            <button class="cell matrix-data" type="button" data-segment-key="low-low"><strong>8,904</strong><span>低价值稳定</span></button>
+            <button class="cell convert matrix-data" type="button" data-segment-key="low-mid"><strong>3,476</strong><span>可引导升级</span></button>
+            <button class="cell convert matrix-data" type="button" data-segment-key="low-high"><strong>706</strong><span>高使用低付费</span></button>
+
+            <div class="cell axis">中充值</div>
+            <button class="cell risk matrix-data" type="button" data-segment-key="mid-none"><strong>1,096</strong><span>可能囤积分</span></button>
+            <button class="cell matrix-data" type="button" data-segment-key="mid-low"><strong>2,318</strong><span>待提升使用</span></button>
+            <button class="cell core matrix-data" type="button" data-segment-key="mid-mid"><strong>4,812</strong><span>稳定用户</span></button>
+            <button class="cell core matrix-data" type="button" data-segment-key="mid-high"><strong>694</strong><span>高潜用户</span></button>
+
+            <div class="cell axis">高充值</div>
+            <button class="cell risk matrix-data" type="button" data-segment-key="high-none"><strong>412</strong><span>高风险未使用</span></button>
+            <button class="cell risk matrix-data" type="button" data-segment-key="high-low"><strong>648</strong><span>囤积分</span></button>
+            <button class="cell core matrix-data" type="button" data-segment-key="high-mid"><strong>1,096</strong><span>高价值待提升</span></button>
+            <button class="cell core matrix-data is-selected" type="button" data-segment-key="high-high"><strong>1,324</strong><span>核心高价值</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="segment-detail" aria-live="polite">
+          <div class="detail-head">
+            <div>
+              <h3 class="detail-title" id="segment-title">高充值 × 高消耗</h3>
+              <div class="detail-subtitle" id="segment-subtitle">核心高价值用户，本周重点看稳定留存、复购和高频使用质量。</div>
+            </div>
+            <div class="detail-actions">
+              <div class="detail-badge" id="segment-badge">核心高价值</div>
+              <a class="detail-link primary" id="segment-detail-link" href="./segment-user-detail.html?segment=high-high">查看用户明细</a>
+            </div>
+          </div>
+          <div class="detail-body">
+            <div class="detail-metrics" id="segment-metrics"></div>
+            <div class="detail-split">
+              <div class="mini-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>具体指标</th>
+                      <th>本周值</th>
+                      <th>环比</th>
+                    </tr>
+                  </thead>
+                  <tbody id="segment-table"></tbody>
+                </table>
+              </div>
+              <div class="detail-note">
+                <h3>运营判断</h3>
+                <p id="segment-action">优先维护权益体验，关注大额充值后的消耗承接，避免核心用户因额度、速度或效果波动流失。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="drilldown" class="section">
+        <div class="section-head">
+          <div>
+            <h2>下钻诊断维度</h2>
+            <div class="hint">主报表固定，异常时按这些维度定位原因。</div>
+          </div>
+        </div>
+        <div class="drill-grid">
+          <div class="drill">
+            <h3>新老用户</h3>
+            <p>判断收入和消耗增长来自新增、老客还是回流。</p>
+            <div class="bar"><i style="width: 72%"></i></div>
+          </div>
+          <div class="drill">
+            <h3>渠道来源</h3>
+            <p>识别高充值、高消耗用户集中在哪些渠道。</p>
+            <div class="bar"><i style="width: 58%"></i></div>
+          </div>
+          <div class="drill">
+            <h3>功能模块</h3>
+            <p>定位积分消耗来自生成、编辑、增强或批量任务。</p>
+            <div class="bar"><i style="width: 81%"></i></div>
+          </div>
+          <div class="drill">
+            <h3>充值档位</h3>
+            <p>看套餐结构、客单价变化和复购档位迁移。</p>
+            <div class="bar"><i style="width: 64%"></i></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="floating-tip" id="metric-tip" role="tooltip" aria-hidden="true">
+    <span class="floating-tip-text"></span>
+    <span class="floating-tip-arrow" aria-hidden="true"></span>
+  </div>
+
+  <script>
+    (() => {
+      const tooltip = document.getElementById("metric-tip");
+      const tooltipText = tooltip.querySelector(".floating-tip-text");
+      const arrow = tooltip.querySelector(".floating-tip-arrow");
+      const margin = 12;
+      const gap = 10;
+      let activeTip = null;
+
+      function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+      }
+
+      function placeTooltip(trigger) {
+        const text = trigger.getAttribute("data-tip");
+        if (!text) return;
+
+        tooltipText.textContent = text;
+        tooltip.style.maxWidth = `${Math.min(320, Math.max(180, window.innerWidth - margin * 2))}px`;
+        tooltip.style.left = "0px";
+        tooltip.style.top = "0px";
+        tooltip.classList.add("is-visible");
+        tooltip.setAttribute("aria-hidden", "false");
+
+        const triggerRect = trigger.getBoundingClientRect();
+        const tipRect = tooltip.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const spaceAbove = triggerRect.top - margin - gap;
+        const spaceBelow = viewportHeight - triggerRect.bottom - margin - gap;
+        const placement = spaceAbove >= tipRect.height || spaceAbove >= spaceBelow ? "top" : "bottom";
+
+        let left = triggerRect.left + triggerRect.width / 2 - tipRect.width / 2;
+        left = clamp(left, margin, viewportWidth - tipRect.width - margin);
+
+        let top = placement === "top"
+          ? triggerRect.top - tipRect.height - gap
+          : triggerRect.bottom + gap;
+        top = clamp(top, margin, viewportHeight - tipRect.height - margin);
+
+        const arrowLeft = clamp(
+          triggerRect.left + triggerRect.width / 2 - left - 5,
+          8,
+          tipRect.width - 18
+        );
+
+        tooltip.dataset.placement = placement;
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+        arrow.style.left = `${arrowLeft}px`;
+      }
+
+      function showTip(trigger) {
+        activeTip = trigger;
+        trigger.setAttribute("aria-describedby", "metric-tip");
+        placeTooltip(trigger);
+      }
+
+      function hideTip(trigger) {
+        if (trigger) trigger.removeAttribute("aria-describedby");
+        activeTip = null;
+        tooltip.classList.remove("is-visible");
+        tooltip.setAttribute("aria-hidden", "true");
+      }
+
+      document.addEventListener("pointerenter", (event) => {
+        const trigger = event.target.closest(".tip");
+        if (trigger) showTip(trigger);
+      }, true);
+
+      document.addEventListener("pointerleave", (event) => {
+        if (event.target.closest(".tip")) hideTip(event.target.closest(".tip"));
+      }, true);
+
+      document.addEventListener("focusin", (event) => {
+        if (event.target.matches(".tip")) showTip(event.target);
+      });
+
+      document.addEventListener("focusout", (event) => {
+        if (event.target.matches(".tip")) hideTip(event.target);
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") hideTip(activeTip);
+      });
+
+      window.addEventListener("scroll", () => {
+        if (activeTip) placeTooltip(activeTip);
+      }, true);
+
+      window.addEventListener("resize", () => {
+        if (activeTip) placeTooltip(activeTip);
+      });
+    })();
+
+    (() => {
+      const segments = {
+        "none-none": {
+          title: "未充值 × 未消耗",
+          badge: "沉默或仅浏览",
+          summary: "用户规模最大，但本周价值行为弱，适合看召回和新手引导触达效率。",
+          action: "优先用低成本触达验证兴趣点，不建议直接强推高价套餐；重点观察首次关键功能体验完成率。",
+          metrics: ["67,420", "12,804", "¥0", "0", "-", "-"],
+          rows: ["48,620", "0", "0", "-", "-", "-"]
+        },
+        "none-low": {
+          title: "未充值 × 低消耗",
+          badge: "轻度体验",
+          summary: "已经开始使用赠送积分或免费额度，但使用强度较低。",
+          action: "适合做首次付费转化和模板/功能推荐，触达时机可放在免费额度即将耗尽前。",
+          metrics: ["18,640", "9,126", "¥0", "0.31M", "-", "24.8%"],
+          rows: ["15,904", "0", "7,420", "-", "1.2 次/周", "-"]
+        },
+        "none-mid": {
+          title: "未充值 × 中消耗",
+          badge: "赠送积分驱动",
+          summary: "使用意愿明确，但尚未付费，是首充转化的重点观察人群。",
+          action: "建议配置额度耗尽提醒、首充礼包和高频功能权益说明，验证免费到付费的转化路径。",
+          metrics: ["6,882", "5,916", "¥0", "0.94M", "-", "39.6%"],
+          rows: ["6,420", "0", "5,318", "-", "2.9 次/周", "-"]
+        },
+        "none-high": {
+          title: "未充值 × 高消耗",
+          badge: "高转化潜力",
+          summary: "使用强度高但没有充值，可能依赖赠送积分、活动积分或历史余额。",
+          action: "优先排查积分来源，结合高频功能做付费墙、权益包和企业/团队套餐转化实验。",
+          metrics: ["1,178", "1,092", "¥0", "0.68M", "-", "61.4%"],
+          rows: ["1,154", "0", "1,036", "-", "7.1 次/周", "-"]
+        },
+        "low-none": {
+          title: "低充值 × 未消耗",
+          badge: "首充未激活",
+          summary: "已经付费但未产生积分消耗，可能充值后没有完成关键使用。",
+          action: "重点检查支付后承接页、积分到账感知、新手任务和首个生成任务转化。",
+          metrics: ["6,320", "1,894", "¥62,800", "0", "12.6%", "-"],
+          rows: ["4,726", "1,182", "0", "¥53", "-", "18.4%"]
+        },
+        "low-low": {
+          title: "低充值 × 低消耗",
+          badge: "低价值稳定",
+          summary: "有轻度付费和轻度使用，当前更像普通用户基础盘。",
+          action: "适合用低门槛套餐、连续使用激励和场景模板提升使用深度。",
+          metrics: ["8,904", "4,628", "¥44,300", "0.22M", "17.8%", "28.2%"],
+          rows: ["7,210", "918", "3,806", "¥48", "1.5 次/周", "25.1%"]
+        },
+        "low-mid": {
+          title: "低充值 × 中消耗",
+          badge: "可引导升级",
+          summary: "小额付费但使用较积极，存在套餐升级空间。",
+          action: "建议测试阶梯套餐、积分包折扣和用量预警，引导从低档充值迁移到中档充值。",
+          metrics: ["3,476", "2,814", "¥28,900", "0.46M", "24.1%", "43.9%"],
+          rows: ["3,168", "626", "2,528", "¥46", "3.4 次/周", "36.7%"]
+        },
+        "low-high": {
+          title: "低充值 × 高消耗",
+          badge: "高使用低付费",
+          summary: "产品参与度高但商业贡献偏低，可能存在价格敏感或余额消耗场景。",
+          action: "重点看积分余额来源和功能偏好，适合推高频功能权益包，而不是泛化促销。",
+          metrics: ["706", "668", "¥12,700", "0.42M", "29.4%", "66.8%"],
+          rows: ["698", "180", "632", "¥71", "8.2 次/周", "44.6%"]
+        },
+        "mid-none": {
+          title: "中充值 × 未消耗",
+          badge: "可能囤积分",
+          summary: "充值金额不低但没有消耗，需要判断是囤积分还是使用链路受阻。",
+          action: "建议做充值后 24 小时内未使用提醒，并检查高价值用户是否卡在功能理解或素材准备。",
+          metrics: ["1,096", "382", "¥54,600", "0", "22.8%", "-"],
+          rows: ["824", "214", "0", "¥255", "-", "31.2%"]
+        },
+        "mid-low": {
+          title: "中充值 × 低消耗",
+          badge: "待提升使用",
+          summary: "有一定付费能力，但使用深度不足，可能没有形成稳定工作流。",
+          action: "适合推使用教程、任务模板和积分使用场景，让付费用户尽快进入高频功能。",
+          metrics: ["2,318", "1,284", "¥66,400", "0.18M", "28.6%", "32.4%"],
+          rows: ["1,982", "438", "1,072", "¥152", "1.7 次/周", "39.8%"]
+        },
+        "mid-mid": {
+          title: "中充值 × 中消耗",
+          badge: "稳定用户",
+          summary: "收入和使用都较均衡，是健康基础盘。",
+          action: "重点观察是否能向高消耗或高充值迁移，适合做进阶功能和套餐升级推荐。",
+          metrics: ["4,812", "3,768", "¥88,900", "1.12M", "34.9%", "52.1%"],
+          rows: ["4,296", "812", "3,226", "¥109", "3.8 次/周", "48.4%"]
+        },
+        "mid-high": {
+          title: "中充值 × 高消耗",
+          badge: "高潜用户",
+          summary: "使用强度高，商业贡献有继续提升空间。",
+          action: "建议重点跟进高频功能偏好，推更高额度包、团队权益或订阅型套餐。",
+          metrics: ["694", "650", "¥37,800", "0.61M", "42.7%", "68.5%"],
+          rows: ["684", "238", "628", "¥159", "8.8 次/周", "56.2%"]
+        },
+        "high-none": {
+          title: "高充值 × 未消耗",
+          badge: "高风险未使用",
+          summary: "高价值充值后未使用，风险优先级最高。",
+          action: "建议建立充值后未消耗预警，由客服或运营做定向触达，确认到账、使用门槛和任务失败问题。",
+          metrics: ["412", "116", "¥86,200", "0", "36.4%", "-"],
+          rows: ["302", "92", "0", "¥937", "-", "42.1%"]
+        },
+        "high-low": {
+          title: "高充值 × 低消耗",
+          badge: "囤积分",
+          summary: "充值能力强但消耗偏低，可能是囤积分或短期没有使用场景。",
+          action: "重点看大额充值后的使用承接，适合推专属教程、权益提醒和积分有效期提示。",
+          metrics: ["648", "336", "¥92,700", "0.09M", "44.8%", "26.5%"],
+          rows: ["512", "186", "274", "¥498", "1.3 次/周", "53.6%"]
+        },
+        "high-mid": {
+          title: "高充值 × 中消耗",
+          badge: "高价值待提升",
+          summary: "付费价值高，使用已经稳定，但还没进入最高消耗层。",
+          action: "适合通过批量任务、专业功能和团队协作场景提高使用频率。",
+          metrics: ["1,096", "946", "¥135,100", "0.78M", "51.6%", "57.8%"],
+          rows: ["1,052", "372", "884", "¥363", "4.2 次/周", "63.4%"]
+        },
+        "high-high": {
+          title: "高充值 × 高消耗",
+          badge: "核心高价值",
+          summary: "核心高价值用户，本周重点看稳定留存、复购和高频使用质量。",
+          action: "优先维护权益体验，关注大额充值后的消耗承接，避免核心用户因额度、速度或效果波动流失。",
+          metrics: ["1,324", "1,218", "¥286,400", "2.18M", "62.4%", "76.3%"],
+          rows: ["1,302", "692", "1,172", "¥414", "8.6 次/周", "71.8%"]
+        }
+      };
+
+      const metricLabels = ["用户数", "周活", "周充值金额", "周积分消耗", "周充值复购率", "周消耗留存率"];
+      const rowLabels = ["月活", "周充值人数", "周消耗人数", "周 ARPPU", "周使用频率", "周充值留存"];
+      const deltas = ["+3.2%", "+5.8%", "+9.4%", "+12.6%", "+2.1 次/周", "+2.4 个百分点"];
+      const buttons = document.querySelectorAll(".matrix-data");
+      const title = document.getElementById("segment-title");
+      const subtitle = document.getElementById("segment-subtitle");
+      const badge = document.getElementById("segment-badge");
+      const metrics = document.getElementById("segment-metrics");
+      const table = document.getElementById("segment-table");
+      const action = document.getElementById("segment-action");
+      const detailLink = document.getElementById("segment-detail-link");
+
+      function renderSegment(key) {
+        const data = segments[key];
+        if (!data) return;
+
+        title.textContent = data.title;
+        subtitle.textContent = data.summary;
+        badge.textContent = data.badge;
+        action.textContent = data.action;
+        detailLink.href = `./segment-user-detail.html?segment=${encodeURIComponent(key)}`;
+        metrics.innerHTML = metricLabels.map((label, index) => `
+          <div class="detail-metric">
+            <span>${label}</span>
+            <strong>${data.metrics[index]}</strong>
+          </div>
+        `).join("");
+        table.innerHTML = rowLabels.map((label, index) => `
+          <tr>
+            <td>${label}</td>
+            <td>${data.rows[index]}</td>
+            <td>${deltas[index]}</td>
+          </tr>
+        `).join("");
+
+        buttons.forEach((button) => {
+          const selected = button.dataset.segmentKey === key;
+          button.classList.toggle("is-selected", selected);
+          button.setAttribute("aria-pressed", selected ? "true" : "false");
+        });
+      }
+
+      buttons.forEach((button) => {
+        button.setAttribute("aria-pressed", button.classList.contains("is-selected") ? "true" : "false");
+        button.addEventListener("click", () => renderSegment(button.dataset.segmentKey));
+      });
+
+      renderSegment("high-high");
+    })();
+  </script>
+</body>
+</html>

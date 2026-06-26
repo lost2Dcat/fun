@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+  <title>交叉分层用户明细</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #657282;
+      --line: #dfe4ea;
+      --blue: #246bfe;
+      --green: #168a5b;
+      --amber: #b76500;
+      --red: #bf3434;
+      --shadow: 0 12px 34px rgba(23, 32, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.5;
+    }
+
+    .page {
+      min-height: 100vh;
+      padding: 26px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: #24476f;
+      background: #ffffff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 12px 0 4px;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      max-width: 860px;
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .button {
+      min-height: 36px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: #17335f;
+      background: #ffffff;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .button.primary {
+      color: #ffffff;
+      border-color: var(--blue);
+      background: var(--blue);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .summary-card {
+      min-height: 94px;
+      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .summary-card strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 22px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 1.4fr repeat(4, minmax(130px, 1fr));
+      gap: 10px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+
+    .field label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tip {
+      width: 16px;
+      height: 16px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid #b8c3cf;
+      border-radius: 50%;
+      color: #5f6d7a;
+      background: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1;
+      padding: 0;
+      cursor: help;
+      outline: 0;
+    }
+
+    .tip:focus-visible {
+      box-shadow: 0 0 0 3px rgba(36, 107, 254, 0.18);
+    }
+
+    .floating-tip {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: max-content;
+      max-width: min(340px, calc(100vw - 24px));
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #ffffff;
+      background: #17202a;
+      box-shadow: 0 10px 24px rgba(23, 32, 42, 0.2);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.5;
+      text-align: left;
+      white-space: pre-line;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      z-index: 1000;
+      transition: opacity 0.12s ease;
+    }
+
+    .floating-tip.is-visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .floating-tip-arrow {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #17202a;
+      transform: rotate(45deg);
+    }
+
+    .floating-tip[data-placement="top"] .floating-tip-arrow {
+      bottom: -5px;
+    }
+
+    .floating-tip[data-placement="bottom"] .floating-tip-arrow {
+      top: -5px;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 36px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: var(--ink);
+      background: #ffffff;
+      font: inherit;
+      font-size: 13px;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1780px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th:first-child,
+    td:first-child,
+    th:nth-child(2),
+    td:nth-child(2),
+    th:nth-child(3),
+    td:nth-child(3),
+    th:nth-child(4),
+    td:nth-child(4),
+    th:nth-child(19),
+    td:nth-child(19),
+    th:nth-child(20),
+    td:nth-child(20) {
+      text-align: left;
+    }
+
+    th {
+      color: var(--muted);
+      background: #fbfcfe;
+      font-weight: 800;
+    }
+
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: #ffffff;
+      box-shadow: 1px 0 0 var(--line);
+    }
+
+    th.sticky-col {
+      z-index: 3;
+      background: #fbfcfe;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      color: #17335f;
+      background: #e9f0ff;
+      font-weight: 800;
+    }
+
+    .tag.green {
+      color: #0f5139;
+      background: #dff4ea;
+    }
+
+    .tag.amber {
+      color: #694000;
+      background: #fff0d8;
+    }
+
+    .tag.red {
+      color: #7c1d1d;
+      background: #ffe5e5;
+    }
+
+    .note {
+      padding: 12px 14px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      background: #fbfcfe;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1120px) {
+      .summary {
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+      }
+
+      .filters {
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        padding: 16px;
+      }
+
+      .topbar {
+        display: block;
+      }
+
+      .actions {
+        justify-content: flex-start;
+        margin-top: 14px;
+      }
+
+      .summary,
+      .filters {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div>
+        <a class="back" href="./weekly-segmentation-report.html#matrix">返回交叉分析</a>
+        <h1 id="page-title">高充值 × 高消耗用户明细</h1>
+        <div class="subtitle" id="page-subtitle">用于运营/业务查看该分层区间的用户清单、近期行为、联系优先级和跟进状态。</div>
+      </div>
+      <div class="actions">
+        <button class="button" type="button" id="copy-link">复制当前筛选链接</button>
+        <button class="button primary" type="button" id="export-csv">导出 CSV</button>
+      </div>
+    </header>
+
+    <section class="summary" aria-label="当前区间概览">
+      <div class="summary-card"><span>区间用户数</span><strong id="summary-users">1,324</strong></div>
+      <div class="summary-card"><span>周活</span><strong id="summary-wau">1,218</strong></div>
+      <div class="summary-card"><span>周充值金额</span><strong id="summary-revenue">¥286,400</strong></div>
+      <div class="summary-card"><span>周积分消耗</span><strong id="summary-points">2.18M</strong></div>
+      <div class="summary-card"><span>建议触达人数</span><strong id="summary-contact">186</strong></div>
+    </section>
+
+    <section class="panel">
+      <div class="filters" aria-label="筛选条件">
+        <div class="field">
+          <label for="keyword">搜索用户</label>
+          <input id="keyword" type="search" placeholder="用户 ID / 昵称 / 邮箱 / 手机" />
+        </div>
+        <div class="field">
+          <label for="priority">联系优先级 <span class="tip" tabindex="0" data-tip="P0：必须优先联系。高充值用户，或高余额/高价值但低消耗、活跃下降，适合当天处理。
+P1：建议本周联系。高消耗低充值，或中高活跃且有转化/升级空间。
+P2：观察或自动化触达。低价值、低活跃、低消耗，先用站内信、邮件、短信培育。
+规则公式：用户价值 × 流失风险 × 转化潜力。">?</span></label>
+          <select id="priority">
+            <option value="">全部</option>
+            <option value="P0">P0</option>
+            <option value="P1">P1</option>
+            <option value="P2">P2</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="status">跟进状态</label>
+          <select id="status">
+            <option value="">全部</option>
+            <option value="待联系">待联系</option>
+            <option value="已联系">已联系</option>
+            <option value="暂不联系">暂不联系</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="channel">渠道来源</label>
+          <select id="channel">
+            <option value="">全部</option>
+            <option value="自然流量">自然流量</option>
+            <option value="广告投放">广告投放</option>
+            <option value="合作渠道">合作渠道</option>
+            <option value="老客推荐">老客推荐</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="owner">负责人</label>
+          <select id="owner">
+            <option value="">全部</option>
+            <option value="运营 A">运营 A</option>
+            <option value="运营 B">运营 B</option>
+            <option value="销售 A">销售 A</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">用户 ID</th>
+              <th>用户名称</th>
+              <th>联系方式</th>
+              <th>渠道来源</th>
+              <th>注册时间</th>
+              <th>最近活跃时间</th>
+              <th>充值分层</th>
+              <th>消耗分层</th>
+              <th>近 28 天充值金额</th>
+              <th>近 28 天积分消耗</th>
+              <th>周充值金额</th>
+              <th>周积分消耗</th>
+              <th>积分余额</th>
+              <th>周活跃天数</th>
+              <th>周使用次数</th>
+              <th>最近使用功能</th>
+              <th>周充值复购</th>
+              <th>周消耗留存</th>
+              <th>用户标签</th>
+              <th>联系优先级 <span class="tip" tabindex="0" data-tip="P0：必须优先联系。高充值用户，或高余额/高价值但低消耗、活跃下降，适合当天处理。
+P1：建议本周联系。高消耗低充值，或中高活跃且有转化/升级空间。
+P2：观察或自动化触达。低价值、低活跃、低消耗，先用站内信、邮件、短信培育。
+规则公式：用户价值 × 流失风险 × 转化潜力。">?</span></th>
+              <th>负责人</th>
+              <th>跟进状态</th>
+              <th>最近跟进时间</th>
+            </tr>
+          </thead>
+          <tbody id="user-rows"></tbody>
+        </table>
+      </div>
+      <div class="note">明细表头设计目标：既能定位用户，也能判断为什么联系、优先联系谁、由谁跟进、跟进到哪一步。真实上线时建议对手机号/邮箱做权限控制和导出审计。</div>
+    </section>
+  </main>
+
+  <div class="floating-tip" id="detail-tip" role="tooltip" aria-hidden="true">
+    <span class="floating-tip-text"></span>
+    <span class="floating-tip-arrow" aria-hidden="true"></span>
+  </div>
+
+  <script>
+    (() => {
+      const tooltip = document.getElementById("detail-tip");
+      const tooltipText = tooltip.querySelector(".floating-tip-text");
+      const arrow = tooltip.querySelector(".floating-tip-arrow");
+      const margin = 12;
+      const gap = 10;
+      let activeTip = null;
+
+      function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+      }
+
+      function placeTooltip(trigger) {
+        const text = trigger.getAttribute("data-tip");
+        if (!text) return;
+
+        tooltipText.textContent = text;
+        tooltip.style.maxWidth = `${Math.min(340, Math.max(180, window.innerWidth - margin * 2))}px`;
+        tooltip.style.left = "0px";
+        tooltip.style.top = "0px";
+        tooltip.classList.add("is-visible");
+        tooltip.setAttribute("aria-hidden", "false");
+
+        const triggerRect = trigger.getBoundingClientRect();
+        const tipRect = tooltip.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const spaceAbove = triggerRect.top - margin - gap;
+        const spaceBelow = viewportHeight - triggerRect.bottom - margin - gap;
+        const placement = spaceAbove >= tipRect.height || spaceAbove >= spaceBelow ? "top" : "bottom";
+
+        let left = triggerRect.left + triggerRect.width / 2 - tipRect.width / 2;
+        left = clamp(left, margin, viewportWidth - tipRect.width - margin);
+
+        let top = placement === "top"
+          ? triggerRect.top - tipRect.height - gap
+          : triggerRect.bottom + gap;
+        top = clamp(top, margin, viewportHeight - tipRect.height - margin);
+
+        const arrowLeft = clamp(
+          triggerRect.left + triggerRect.width / 2 - left - 5,
+          8,
+          tipRect.width - 18
+        );
+
+        tooltip.dataset.placement = placement;
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+        arrow.style.left = `${arrowLeft}px`;
+      }
+
+      function showTip(trigger) {
+        activeTip = trigger;
+        trigger.setAttribute("aria-describedby", "detail-tip");
+        placeTooltip(trigger);
+      }
+
+      function hideTip(trigger) {
+        if (trigger) trigger.removeAttribute("aria-describedby");
+        activeTip = null;
+        tooltip.classList.remove("is-visible");
+        tooltip.setAttribute("aria-hidden", "true");
+      }
+
+      document.addEventListener("pointerenter", (event) => {
+        const trigger = event.target.closest(".tip");
+        if (trigger) showTip(trigger);
+      }, true);
+
+      document.addEventListener("pointerleave", (event) => {
+        const trigger = event.target.closest(".tip");
+        if (trigger) hideTip(trigger);
+      }, true);
+
+      document.addEventListener("focusin", (event) => {
+        if (event.target.matches(".tip")) showTip(event.target);
+      });
+
+      document.addEventListener("focusout", (event) => {
+        if (event.target.matches(".tip")) hideTip(event.target);
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") hideTip(activeTip);
+      });
+
+      window.addEventListener("scroll", () => {
+        if (activeTip) placeTooltip(activeTip);
+      }, true);
+
+      window.addEventListener("resize", () => {
+        if (activeTip) placeTooltip(activeTip);
+      });
+    })();
+
+    (() => {
+      const segmentMap = {
+        "none-none": { title: "未充值 × 未消耗", users: "67,420", wau: "12,804", revenue: "¥0", points: "0", contact: "2,480" },
+        "none-low": { title: "未充值 × 低消耗", users: "18,640", wau: "9,126", revenue: "¥0", points: "0.31M", contact: "1,220" },
+        "none-mid": { title: "未充值 × 中消耗", users: "6,882", wau: "5,916", revenue: "¥0", points: "0.94M", contact: "842" },
+        "none-high": { title: "未充值 × 高消耗", users: "1,178", wau: "1,092", revenue: "¥0", points: "0.68M", contact: "328" },
+        "low-none": { title: "低充值 × 未消耗", users: "6,320", wau: "1,894", revenue: "¥62,800", points: "0", contact: "614" },
+        "low-low": { title: "低充值 × 低消耗", users: "8,904", wau: "4,628", revenue: "¥44,300", points: "0.22M", contact: "590" },
+        "low-mid": { title: "低充值 × 中消耗", users: "3,476", wau: "2,814", revenue: "¥28,900", points: "0.46M", contact: "386" },
+        "low-high": { title: "低充值 × 高消耗", users: "706", wau: "668", revenue: "¥12,700", points: "0.42M", contact: "212" },
+        "mid-none": { title: "中充值 × 未消耗", users: "1,096", wau: "382", revenue: "¥54,600", points: "0", contact: "238" },
+        "mid-low": { title: "中充值 × 低消耗", users: "2,318", wau: "1,284", revenue: "¥66,400", points: "0.18M", contact: "306" },
+        "mid-mid": { title: "中充值 × 中消耗", users: "4,812", wau: "3,768", revenue: "¥88,900", points: "1.12M", contact: "420" },
+        "mid-high": { title: "中充值 × 高消耗", users: "694", wau: "650", revenue: "¥37,800", points: "0.61M", contact: "190" },
+        "high-none": { title: "高充值 × 未消耗", users: "412", wau: "116", revenue: "¥86,200", points: "0", contact: "146" },
+        "high-low": { title: "高充值 × 低消耗", users: "648", wau: "336", revenue: "¥92,700", points: "0.09M", contact: "168" },
+        "high-mid": { title: "高充值 × 中消耗", users: "1,096", wau: "946", revenue: "¥135,100", points: "0.78M", contact: "214" },
+        "high-high": { title: "高充值 × 高消耗", users: "1,324", wau: "1,218", revenue: "¥286,400", points: "2.18M", contact: "186" }
+      };
+
+      const params = new URLSearchParams(location.search);
+      const segmentKey = params.get("segment") || "high-high";
+      const segment = segmentMap[segmentKey] || segmentMap["high-high"];
+      const rows = buildRows(segmentKey);
+
+      document.getElementById("page-title").textContent = `${segment.title}用户明细`;
+      document.getElementById("page-subtitle").textContent = `当前区间：${segment.title}。用于运营/业务查看用户清单、联系优先级、近期行为和跟进状态。`;
+      document.getElementById("summary-users").textContent = segment.users;
+      document.getElementById("summary-wau").textContent = segment.wau;
+      document.getElementById("summary-revenue").textContent = segment.revenue;
+      document.getElementById("summary-points").textContent = segment.points;
+      document.getElementById("summary-contact").textContent = segment.contact;
+
+      const filters = {
+        keyword: document.getElementById("keyword"),
+        priority: document.getElementById("priority"),
+        status: document.getElementById("status"),
+        channel: document.getElementById("channel"),
+        owner: document.getElementById("owner")
+      };
+      const tbody = document.getElementById("user-rows");
+
+      function buildRows(key) {
+        const [rechargeLevel, usageLevel] = key.split("-");
+        const levelText = { none: "未充值", low: "低充值", mid: "中充值", high: "高充值" };
+        const usageText = { none: "未消耗", low: "低消耗", mid: "中消耗", high: "高消耗" };
+        const features = ["图片生成", "高清增强", "批量处理", "背景替换", "局部重绘"];
+        const channels = ["自然流量", "广告投放", "合作渠道", "老客推荐"];
+        const owners = ["运营 A", "运营 B", "销售 A"];
+        const statuses = ["待联系", "已联系", "暂不联系"];
+        const priorities = rechargeLevel === "high" || usageLevel === "high" ? ["P0", "P1", "P1", "P2"] : ["P1", "P2", "P2", "P2"];
+        const rechargeBase = { none: 0, low: 42, mid: 138, high: 520 }[rechargeLevel];
+        const usageBase = { none: 0, low: 86, mid: 420, high: 1680 }[usageLevel];
+
+        return Array.from({ length: 12 }, (_, index) => {
+          const n = index + 1;
+          const id = `U${String(830000 + n * 37).padStart(7, "0")}`;
+          const weeklyRecharge = rechargeBase === 0 ? 0 : rechargeBase + n * 9;
+          const weeklyUsage = usageBase === 0 ? 0 : usageBase + n * 36;
+          return {
+            id,
+            name: `Pixmax 用户 ${n}`,
+            contact: `user${n}@example.com / 138****${String(2400 + n).slice(-4)}`,
+            channel: channels[index % channels.length],
+            signupAt: `2026-0${(index % 5) + 1}-${String(10 + index).padStart(2, "0")}`,
+            lastActiveAt: `2026-06-${String(21 - (index % 6)).padStart(2, "0")} ${10 + (index % 8)}:30`,
+            rechargeLevel: levelText[rechargeLevel],
+            usageLevel: usageText[usageLevel],
+            recharge28d: rechargeBase === 0 ? "¥0" : `¥${(rechargeBase * 3 + n * 21).toLocaleString()}`,
+            usage28d: usageBase === 0 ? "0" : (usageBase * 3 + n * 88).toLocaleString(),
+            weeklyRecharge: `¥${weeklyRecharge.toLocaleString()}`,
+            weeklyUsage: weeklyUsage.toLocaleString(),
+            balance: (1800 + n * 240).toLocaleString(),
+            activeDays: usageBase === 0 ? index % 2 : Math.min(7, 2 + (index % 6)),
+            usageCount: usageBase === 0 ? 0 : 3 + index * 2,
+            feature: features[index % features.length],
+            repurchase: rechargeBase === 0 ? "否" : index % 3 === 0 ? "否" : "是",
+            usageRetained: usageBase === 0 ? "否" : index % 4 === 0 ? "否" : "是",
+            tags: [usageLevel === "high" ? "高频使用" : "普通使用", rechargeLevel === "high" ? "高价值" : "待培育"].join(" / "),
+            priority: priorities[index % priorities.length],
+            owner: owners[index % owners.length],
+            status: statuses[index % statuses.length],
+            followAt: index % 3 === 0 ? "-" : `2026-06-${String(18 + (index % 4)).padStart(2, "0")}`
+          };
+        });
+      }
+
+      function tagClass(value) {
+        if (value === "P0" || value === "待联系") return "red";
+        if (value === "P1" || value === "已联系") return "amber";
+        return "green";
+      }
+
+      function visibleRows() {
+        const keyword = filters.keyword.value.trim().toLowerCase();
+        return rows.filter((row) => {
+          const searchable = `${row.id} ${row.name} ${row.contact}`.toLowerCase();
+          return (!keyword || searchable.includes(keyword))
+            && (!filters.priority.value || row.priority === filters.priority.value)
+            && (!filters.status.value || row.status === filters.status.value)
+            && (!filters.channel.value || row.channel === filters.channel.value)
+            && (!filters.owner.value || row.owner === filters.owner.value);
+        });
+      }
+
+      function render() {
+        tbody.innerHTML = visibleRows().map((row) => `
+          <tr>
+            <td class="sticky-col">${row.id}</td>
+            <td>${row.name}</td>
+            <td>${row.contact}</td>
+            <td>${row.channel}</td>
+            <td>${row.signupAt}</td>
+            <td>${row.lastActiveAt}</td>
+            <td>${row.rechargeLevel}</td>
+            <td>${row.usageLevel}</td>
+            <td>${row.recharge28d}</td>
+            <td>${row.usage28d}</td>
+            <td>${row.weeklyRecharge}</td>
+            <td>${row.weeklyUsage}</td>
+            <td>${row.balance}</td>
+            <td>${row.activeDays}</td>
+            <td>${row.usageCount}</td>
+            <td>${row.feature}</td>
+            <td>${row.repurchase}</td>
+            <td>${row.usageRetained}</td>
+            <td>${row.tags}</td>
+            <td><span class="tag ${tagClass(row.priority)}">${row.priority}</span></td>
+            <td>${row.owner}</td>
+            <td><span class="tag ${tagClass(row.status)}">${row.status}</span></td>
+            <td>${row.followAt}</td>
+          </tr>
+        `).join("");
+      }
+
+      function downloadCsv() {
+        const headers = [
+          "用户ID", "用户名称", "联系方式", "渠道来源", "注册时间", "最近活跃时间", "充值分层", "消耗分层",
+          "近28天充值金额", "近28天积分消耗", "周充值金额", "周积分消耗", "积分余额", "周活跃天数",
+          "周使用次数", "最近使用功能", "周充值复购", "周消耗留存", "用户标签", "联系优先级", "负责人",
+          "跟进状态", "最近跟进时间"
+        ];
+        const csvRows = visibleRows().map((row) => [
+          row.id, row.name, row.contact, row.channel, row.signupAt, row.lastActiveAt, row.rechargeLevel, row.usageLevel,
+          row.recharge28d, row.usage28d, row.weeklyRecharge, row.weeklyUsage, row.balance, row.activeDays,
+          row.usageCount, row.feature, row.repurchase, row.usageRetained, row.tags, row.priority, row.owner,
+          row.status, row.followAt
+        ]);
+        const csv = [headers, ...csvRows].map((items) => items.map((item) => `"${String(item).replaceAll("\"", "\"\"")}"`).join(",")).join("\r\n");
+        const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${segment.title.replaceAll(" × ", "-")}-用户明细.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+
+      Object.values(filters).forEach((element) => element.addEventListener("input", render));
+      document.getElementById("export-csv").addEventListener("click", downloadCsv);
+      document.getElementById("copy-link").addEventListener("click", async () => {
+        await navigator.clipboard.writeText(location.href);
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
