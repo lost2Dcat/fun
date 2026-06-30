@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+  <title>字段字典</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #657282;
+      --line: #dfe4ea;
+      --blue: #246bfe;
+      --green: #168a5b;
+      --amber: #b76500;
+      --shadow: 0 12px 34px rgba(23, 32, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.5;
+    }
+
+    .page {
+      min-height: 100vh;
+      padding: 26px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .back,
+    .button {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: #17335f;
+      background: #ffffff;
+      text-decoration: none;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .button.primary {
+      color: #ffffff;
+      border-color: var(--blue);
+      background: var(--blue);
+    }
+
+    h1 {
+      margin: 12px 0 4px;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      max-width: 880px;
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .summary-card {
+      min-height: 94px;
+      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .summary-card strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 22px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 1.5fr repeat(3, minmax(150px, 1fr));
+      gap: 10px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 36px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: var(--ink);
+      background: #ffffff;
+      font: inherit;
+      font-size: 13px;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1660px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      background: #fbfcfe;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    td {
+      color: #22303d;
+    }
+
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: #ffffff;
+      box-shadow: 1px 0 0 var(--line);
+    }
+
+    th.sticky-col {
+      z-index: 3;
+      background: #fbfcfe;
+    }
+
+    .code {
+      color: #0f3057;
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      color: #17335f;
+      background: #e9f0ff;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .tag.green {
+      color: #0f5139;
+      background: #dff4ea;
+    }
+
+    .tag.amber {
+      color: #694000;
+      background: #fff0d8;
+    }
+
+    .note {
+      padding: 12px 14px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      background: #fbfcfe;
+      font-size: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .summary {
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+      }
+
+      .filters {
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+      }
+    }
+
+    @media (max-width: 680px) {
+      .page {
+        padding: 16px;
+      }
+
+      .topbar {
+        display: block;
+      }
+
+      .actions {
+        justify-content: flex-start;
+        margin-top: 14px;
+      }
+
+      .summary,
+      .filters {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div>
+        <a class="back" href="./weekly-segmentation-report.html">返回主报表</a>
+        <h1>字段字典</h1>
+        <div class="subtitle">集中查看报表字段定义、数据来源、计算方式、时间口径、更新频率和维护负责人，方便产研对接、排查口径和后续接真实数据。</div>
+      </div>
+      <div class="actions">
+        <a class="button" href="./segment-user-detail.html?segment=high-high">用户明细样例</a>
+        <button class="button primary" type="button" id="export-csv">导出 CSV</button>
+      </div>
+    </header>
+
+    <section class="summary" aria-label="字段字典概览">
+      <div class="summary-card"><span>字段数量</span><strong id="summary-fields">0</strong></div>
+      <div class="summary-card"><span>字段分类</span><strong id="summary-categories">0</strong></div>
+      <div class="summary-card"><span>数据来源</span><strong id="summary-sources">0</strong></div>
+      <div class="summary-card"><span>维护角色</span><strong id="summary-owners">0</strong></div>
+    </section>
+
+    <section class="panel">
+      <div class="filters" aria-label="字段筛选">
+        <div class="field">
+          <label for="keyword">搜索字段</label>
+          <input id="keyword" type="search" placeholder="字段名 / 展示名 / 定义 / 来源" />
+        </div>
+        <div class="field">
+          <label for="category">字段分类</label>
+          <select id="category"></select>
+        </div>
+        <div class="field">
+          <label for="source">数据来源</label>
+          <select id="source"></select>
+        </div>
+        <div class="field">
+          <label for="owner">维护负责人</label>
+          <select id="owner"></select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">字段名</th>
+              <th>展示名称</th>
+              <th>字段分类</th>
+              <th>字段类型</th>
+              <th>业务定义</th>
+              <th>数据来源</th>
+              <th>计算方式</th>
+              <th>时间口径</th>
+              <th>更新频率</th>
+              <th>维护负责人</th>
+              <th>质量检查 / 备注</th>
+            </tr>
+          </thead>
+          <tbody id="dictionary-rows"></tbody>
+        </table>
+      </div>
+      <div class="note">字段字典是报表交接的口径清单。真实上线时建议把负责人映射到团队或数据资产系统，并为关键指标配置自动化质量检查。</div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const fields = [
+        {
+          name: "stat_week",
+          label: "统计周",
+          category: "时间口径",
+          type: "date_range",
+          definition: "当前周报覆盖的自然周，示例为 2026-06-15 至 2026-06-21。",
+          source: "dim_calendar",
+          formula: "按自然周开始日和结束日生成。",
+          window: "周一至周日",
+          refresh: "每周一",
+          owner: "数据产品",
+          note: "所有周指标必须绑定同一统计周。"
+        },
+        {
+          name: "segment_window_28d",
+          label: "分层窗口",
+          category: "时间口径",
+          type: "date_range",
+          definition: "统计周开始前近 28 天，用于定义充值分层和积分消耗分层。",
+          source: "dim_calendar",
+          formula: "统计周开始日 - 28 天 至 统计周开始日 - 1 天。",
+          window: "近 4 个完整自然周",
+          refresh: "每周一",
+          owner: "数据产品",
+          note: "避免用本周数据同时定义分层和评估本周表现。"
+        },
+        {
+          name: "user_id",
+          label: "用户 ID",
+          category: "用户基础",
+          type: "string",
+          definition: "用户唯一标识，用于用户去重、分层和明细导出。",
+          source: "dim_user",
+          formula: "直接取用户主键。",
+          window: "当前快照",
+          refresh: "每日",
+          owner: "数据工程",
+          note: "必须稳定且不可复用。"
+        },
+        {
+          name: "user_name",
+          label: "用户名称",
+          category: "用户基础",
+          type: "string",
+          definition: "用户昵称或业务可识别名称，用于运营查看。",
+          source: "dim_user",
+          formula: "优先取昵称，缺失时展示脱敏账号。",
+          window: "当前快照",
+          refresh: "每日",
+          owner: "用户系统",
+          note: "导出时注意敏感信息权限。"
+        },
+        {
+          name: "contact_info",
+          label: "联系方式",
+          category: "用户基础",
+          type: "string",
+          definition: "邮箱、手机号或其他可触达方式。",
+          source: "dim_user_contact",
+          formula: "按权限展示脱敏联系方式。",
+          window: "当前快照",
+          refresh: "每日",
+          owner: "用户系统",
+          note: "真实数据必须做权限控制和导出审计。"
+        },
+        {
+          name: "channel_source",
+          label: "渠道来源",
+          category: "用户基础",
+          type: "string",
+          definition: "用户首次来源或归因后的主要获客渠道。",
+          source: "dim_user_attribution",
+          formula: "按当前归因规则取 first_touch 或业务确认渠道。",
+          window: "注册时或归因回填",
+          refresh: "每日",
+          owner: "增长运营",
+          note: "需和投放归因口径保持一致。"
+        },
+        {
+          name: "recharge_segment",
+          label: "充值分层",
+          category: "分层字段",
+          type: "enum",
+          definition: "按近 28 天有效充值金额划分为未充值、低充值、中充值、高充值。",
+          source: "fact_payment_order",
+          formula: "sum(recharge_amount_28d)，按固定阈值或分位数映射分层。",
+          window: "统计周开始前近 28 天",
+          refresh: "每周一",
+          owner: "数据分析",
+          note: "零值用户单独归为未充值，不并入低充值。"
+        },
+        {
+          name: "usage_segment",
+          label: "消耗分层",
+          category: "分层字段",
+          type: "enum",
+          definition: "按近 28 天有效积分消耗划分为未消耗、低消耗、中消耗、高消耗。",
+          source: "fact_credit_consumption",
+          formula: "sum(points_consumed_28d)，按固定阈值或分位数映射分层。",
+          window: "统计周开始前近 28 天",
+          refresh: "每周一",
+          owner: "数据分析",
+          note: "系统补扣和人工修正需单独标记。"
+        },
+        {
+          name: "segment_user_count",
+          label: "用户数",
+          category: "规模指标",
+          type: "number",
+          definition: "落入当前分层或交叉格子的去重用户数。",
+          source: "user_week_segment_snapshot",
+          formula: "count(distinct user_id)",
+          window: "分层窗口快照",
+          refresh: "每周一",
+          owner: "数据分析",
+          note: "这是分层池人数，不是本周活跃人数。"
+        },
+        {
+          name: "weekly_active_users",
+          label: "周活",
+          category: "活跃指标",
+          type: "number",
+          definition: "统计周内至少发生 1 次有效活跃行为的去重用户数。",
+          source: "fact_user_activity",
+          formula: "count(distinct user_id where active_event = true)",
+          window: "当前统计周",
+          refresh: "每日增量，周报固化",
+          owner: "数据分析",
+          note: "排除登录失败、心跳等无业务意义事件。"
+        },
+        {
+          name: "monthly_active_users",
+          label: "月活",
+          category: "活跃指标",
+          type: "number",
+          definition: "统计周结束日向前近 30 天内至少活跃 1 次的去重用户数。",
+          source: "fact_user_activity",
+          formula: "count(distinct user_id where active_event = true in last 30 days)",
+          window: "统计周结束日前近 30 天",
+          refresh: "每日",
+          owner: "数据分析",
+          note: "用于近月活跃规模，不等于自然月 MAU。"
+        },
+        {
+          name: "weekly_recharge_amount",
+          label: "周充值金额",
+          category: "充值指标",
+          type: "currency",
+          definition: "统计周内支付成功且未退款的充值订单金额总和。",
+          source: "fact_payment_order",
+          formula: "sum(amount where status = paid and refund_amount = 0)",
+          window: "当前统计周",
+          refresh: "每日增量，周报固化",
+          owner: "支付数据",
+          note: "测试订单、退款、撤单需剔除。"
+        },
+        {
+          name: "weekly_recharge_users",
+          label: "周充值人数",
+          category: "充值指标",
+          type: "number",
+          definition: "统计周内至少完成 1 笔有效充值的去重用户数。",
+          source: "fact_payment_order",
+          formula: "count(distinct user_id where valid_recharge = true)",
+          window: "当前统计周",
+          refresh: "每日增量，周报固化",
+          owner: "支付数据",
+          note: "多次充值只计 1 人。"
+        },
+        {
+          name: "weekly_arppu",
+          label: "周 ARPPU",
+          category: "充值指标",
+          type: "currency",
+          definition: "统计周内付费用户的人均充值金额。",
+          source: "fact_payment_order",
+          formula: "周充值金额 / 周充值人数",
+          window: "当前统计周",
+          refresh: "每周一",
+          owner: "数据分析",
+          note: "周充值人数为 0 时展示为空或横线。"
+        },
+        {
+          name: "weekly_repurchase_rate",
+          label: "周充值复购率",
+          category: "充值指标",
+          type: "percent",
+          definition: "统计周充值用户中，历史上在本周之前已有过有效充值的用户占比。",
+          source: "fact_payment_order",
+          formula: "复购充值用户数 / 周充值人数",
+          window: "当前统计周",
+          refresh: "每周一",
+          owner: "数据分析",
+          note: "环比变化单位用百分点。"
+        },
+        {
+          name: "weekly_recharge_retention",
+          label: "周充值留存",
+          category: "充值指标",
+          type: "percent",
+          definition: "上周有有效充值的用户中，本周仍有有效充值的用户占比。",
+          source: "fact_payment_order",
+          formula: "本周继续充值用户数 / 上周充值用户数",
+          window: "相邻两个自然周",
+          refresh: "每周一",
+          owner: "数据分析",
+          note: "用于判断充值行为是否持续。"
+        },
+        {
+          name: "weekly_points_consumed",
+          label: "周积分消耗",
+          category: "消耗指标",
+          type: "number",
+          definition: "统计周内因有效功能使用产生的积分扣减总和。",
+          source: "fact_credit_consumption",
+          formula: "sum(points_consumed where consumption_type = valid_feature_usage)",
+          window: "当前统计周",
+          refresh: "每日增量，周报固化",
+          owner: "产品数据",
+          note: "系统补扣、人工修正需单独标记。"
+        },
+        {
+          name: "weekly_consuming_users",
+          label: "周消耗人数",
+          category: "消耗指标",
+          type: "number",
+          definition: "统计周内至少发生 1 次有效积分消耗的去重用户数。",
+          source: "fact_credit_consumption",
+          formula: "count(distinct user_id where points_consumed > 0)",
+          window: "当前统计周",
+          refresh: "每日增量，周报固化",
+          owner: "产品数据",
+          note: "与周活不同，必须发生积分扣减。"
+        },
+        {
+          name: "weekly_avg_points_consumed",
+          label: "周人均消耗",
+          category: "消耗指标",
+          type: "number",
+          definition: "统计周内消耗用户的人均积分消耗。",
+          source: "fact_credit_consumption",
+          formula: "周积分消耗 / 周消耗人数",
+          window: "当前统计周",
+          refresh: "每周一",
+          owner: "数据分析",
+          note: "周消耗人数为 0 时展示为空或横线。"
+        },
+        {
+          name: "weekly_usage_frequency",
+          label: "周使用频率",
+          category: "消耗指标",
+          type: "number",
+          definition: "统计周内消耗用户的人均有效功能使用次数。",
+          source: "fact_feature_usage",
+          formula: "有效功能使用次数 / 周消耗人数",
+          window: "当前统计周",
+          refresh: "每周一",
+          owner: "产品数据",
+          note: "单位是次/周，环比不能用百分点。"
+        },
+        {
+          name: "weekly_consumption_retention",
+          label: "周消耗留存率",
+          category: "消耗指标",
+          type: "percent",
+          definition: "上周有积分消耗的用户中，本周仍有积分消耗的用户占比。",
+          source: "fact_credit_consumption",
+          formula: "本周继续消耗用户数 / 上周消耗用户数",
+          window: "相邻两个自然周",
+          refresh: "每周一",
+          owner: "数据分析",
+          note: "环比变化单位用百分点。"
+        },
+        {
+          name: "points_balance",
+          label: "积分余额",
+          category: "运营明细",
+          type: "number",
+          definition: "用户当前可用积分余额。",
+          source: "user_credit_balance_snapshot",
+          formula: "当前可用余额快照。",
+          window: "当前快照",
+          refresh: "每日",
+          owner: "产品数据",
+          note: "用于判断是否需要额度提醒或促活。"
+        },
+        {
+          name: "contact_priority",
+          label: "联系优先级",
+          category: "运营明细",
+          type: "enum",
+          definition: "运营联系优先级，分为 P0、P1、P2。",
+          source: "derived_operation_rule",
+          formula: "用户价值 × 流失风险 × 转化潜力。",
+          window: "当前统计周",
+          refresh: "每周一",
+          owner: "运营策略",
+          note: "P0 当天处理，P1 本周联系，P2 自动化触达。"
+        },
+        {
+          name: "follow_status",
+          label: "跟进状态",
+          category: "运营明细",
+          type: "enum",
+          definition: "业务或运营对该用户的当前跟进状态。",
+          source: "crm_follow_log",
+          formula: "取最新一条跟进记录状态。",
+          window: "当前快照",
+          refresh: "实时或每日",
+          owner: "运营团队",
+          note: "可选值示例：待联系、已联系、暂不联系。"
+        }
+      ];
+
+      const filters = {
+        keyword: document.getElementById("keyword"),
+        category: document.getElementById("category"),
+        source: document.getElementById("source"),
+        owner: document.getElementById("owner")
+      };
+      const tbody = document.getElementById("dictionary-rows");
+
+      function unique(key) {
+        return [...new Set(fields.map((field) => field[key]))].sort((a, b) => a.localeCompare(b, "zh-CN"));
+      }
+
+      function fillSelect(select, values) {
+        select.innerHTML = `<option value="">全部</option>${values.map((value) => `<option value="${value}">${value}</option>`).join("")}`;
+      }
+
+      function visibleRows() {
+        const keyword = filters.keyword.value.trim().toLowerCase();
+        return fields.filter((field) => {
+          const searchable = Object.values(field).join(" ").toLowerCase();
+          return (!keyword || searchable.includes(keyword))
+            && (!filters.category.value || field.category === filters.category.value)
+            && (!filters.source.value || field.source === filters.source.value)
+            && (!filters.owner.value || field.owner === filters.owner.value);
+        });
+      }
+
+      function categoryClass(category) {
+        if (category.includes("充值")) return "amber";
+        if (category.includes("消耗") || category.includes("运营")) return "green";
+        return "";
+      }
+
+      function render() {
+        tbody.innerHTML = visibleRows().map((field) => `
+          <tr>
+            <td class="sticky-col"><span class="code">${field.name}</span></td>
+            <td>${field.label}</td>
+            <td><span class="tag ${categoryClass(field.category)}">${field.category}</span></td>
+            <td>${field.type}</td>
+            <td>${field.definition}</td>
+            <td><span class="code">${field.source}</span></td>
+            <td>${field.formula}</td>
+            <td>${field.window}</td>
+            <td>${field.refresh}</td>
+            <td>${field.owner}</td>
+            <td>${field.note}</td>
+          </tr>
+        `).join("");
+      }
+
+      function downloadCsv() {
+        const headers = ["字段名", "展示名称", "字段分类", "字段类型", "业务定义", "数据来源", "计算方式", "时间口径", "更新频率", "维护负责人", "质量检查/备注"];
+        const csvRows = visibleRows().map((field) => [field.name, field.label, field.category, field.type, field.definition, field.source, field.formula, field.window, field.refresh, field.owner, field.note]);
+        const csv = [headers, ...csvRows].map((items) => items.map((item) => `"${String(item).replaceAll("\"", "\"\"")}"`).join(",")).join("\r\n");
+        const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "字段字典.csv";
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+
+      fillSelect(filters.category, unique("category"));
+      fillSelect(filters.source, unique("source"));
+      fillSelect(filters.owner, unique("owner"));
+      document.getElementById("summary-fields").textContent = String(fields.length);
+      document.getElementById("summary-categories").textContent = String(unique("category").length);
+      document.getElementById("summary-sources").textContent = String(unique("source").length);
+      document.getElementById("summary-owners").textContent = String(unique("owner").length);
+      Object.values(filters).forEach((element) => element.addEventListener("input", render));
+      document.getElementById("export-csv").addEventListener("click", downloadCsv);
+      render();
+    })();
+  </script>
+</body>
+</html>
